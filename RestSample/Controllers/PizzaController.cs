@@ -20,11 +20,6 @@ namespace RestSample.Controllers
             this._pizzaService = pizzaService;
         }
 
-        // Select
-        // Get All
-        // Get by id
-        // Get by filter
-
         [HttpGet]
         [Route("")]
         public IHttpActionResult GetAll()
@@ -40,7 +35,6 @@ namespace RestSample.Controllers
             return pizza == null ? (IHttpActionResult)NotFound() : Ok(pizza);
         }
 
-        // Insert
         [HttpPost]
         [Route("")]
         public IHttpActionResult Add([FromBody]PizzaDto pizza)
@@ -52,7 +46,6 @@ namespace RestSample.Controllers
             return Created($"api/pizzas/{pizzaResult.Id}", pizzaResult);
         }
 
-        //Update
        [HttpPut]
        [Route("{id}")]
         public IHttpActionResult Update(int id, [FromBody] PizzaDto pizza)
@@ -64,7 +57,6 @@ namespace RestSample.Controllers
             return Ok(pizzaTemp);
         }
 
-        // Delete
         [HttpDelete]
         [Route("{id}")]
         public IHttpActionResult Delete(int id)
