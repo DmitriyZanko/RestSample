@@ -51,13 +51,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contexts\Configuration\PizzaDbConfiguration.cs" />
     <Compile Include="Contexts\PizzaShopContext.cs" />
+    <Compile Include="Migrations\202005311235243_InitialCreate.cs" />
+    <Compile Include="Migrations\202005311235243_InitialCreate.designer.cs">
+      <DependentUpon>202005311235243_InitialCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005311338594_UpdatePizzaDbWithWeight.cs" />
+    <Compile Include="Migrations\202005311338594_UpdatePizzaDbWithWeight.designer.cs">
+      <DependentUpon>202005311338594_UpdatePizzaDbWithWeight.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\PizzaDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\202005311235243_InitialCreate.resx">
+      <DependentUpon>202005311235243_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005311338594_UpdatePizzaDbWithWeight.resx">
+      <DependentUpon>202005311338594_UpdatePizzaDbWithWeight.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using FluentValidation;
 using RestSample.Data.Contexts;
 using RestSample.Data.Models;
 
@@ -12,55 +15,39 @@ namespace RestSample.Logic.Services
     internal class PizzaService : IPizzaService
     {
         private readonly PizzaShopContext _context;
+        private readonly IMapper _mapper;
+        private readonly IValidator<PizzaDto> _validator;
 
-        public PizzaService(PizzaShopContext context)
+        public PizzaService(PizzaShopContext context, IMapper mapper, IValidator<PizzaDto> validator)
         {
             this._context = context;
+            this._mapper = mapper;
+            this._validator = validator;
         }
 
         public IEnumerable<PizzaDto> GetAll()
         {
-            return _context.Pizzas.ToList()
-                .ConvertAll(p => new PizzaDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price
-                });
+            return _context.Pizzas.AsNoTracking()
+                .ProjectToArray<PizzaDto>(_mapper.ConfigurationProvider);
         }
 
         public PizzaDto GetById(int id)
         {
-            var pizzaDb = _context.Pizzas.SingleOrDefault(p => p.Id == id);
-            if (pizzaDb == null)
-                return null;
-            
-            return new PizzaDto
-            {
-                Id = pizzaDb.Id,
-                Name = pizzaDb.Name,
-                Price = pizzaDb.Price
-            };
+            return _context.Pizzas.AsNoTracking()
+                .Where(p => p.Id == id)
+                .ProjectToSingleOrDefault<PizzaDto>(_mapper.ConfigurationProvider);
         }
 
         public PizzaDto Add(PizzaDto pizza)
         {
-            var pizzaDb = new PizzaDb
-            {
-                Name = pizza.Name,
-                Price = pizza.Price,
-                CreatorId = 123
-            };
+            _validator.ValidateAndThrow(pizza, "PostValidation");
+
+            var pizzaDb = _mapper.Map<PizzaDb>(pizza);
 
             _context.Pizzas.Add(pizzaDb);
             _context.SaveChanges();
 
-            return new PizzaDto
-            {
-                Id = pizzaDb.Id,
-                Name = pizzaDb.Name,
-                Price = pizzaDb.Price
-            };
+            return _mapper.Map<PizzaDto>(pizzaDb);
         }
 
         public PizzaDto Update(int id, PizzaDto pizza)

@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Results;
+using FluentValidation;
+using FluentValidation.WebApi;
 using RestSample.Logic.Models;
 using RestSample.Logic.Services;
 
@@ -37,13 +39,20 @@ namespace RestSample.Controllers
 
         [HttpPost]
         [Route("")]
-        public IHttpActionResult Add([FromBody]PizzaDto pizza)
+        public IHttpActionResult Add([FromBody, CustomizeValidator(RuleSet = "PreValidator")]PizzaDto pizza)
         {
-            var pizzaResult = _pizzaService.Add(pizza);
-            if (pizzaResult == null)
-                return BadRequest();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            return Created($"api/pizzas/{pizzaResult.Id}", pizzaResult);
+            try
+            {
+                var pizzaResult = _pizzaService.Add(pizza);
+                return Created($"api/pizzas/{pizzaResult.Id}", pizzaResult);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
        [HttpPut]
