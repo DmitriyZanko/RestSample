@@ -26,15 +26,20 @@ namespace RestSample.Controllers
         [Route("")]
         public IHttpActionResult GetAll()
         {
-            return Ok(_pizzaService.GetAll());
+            var result = _pizzaService.GetAll();
+            return result.IsSuccess ? Ok(result.Value) : (IHttpActionResult)StatusCode(HttpStatusCode.InternalServerError);
         }
 
         [HttpGet]
         [Route("{id}")]
         public IHttpActionResult GetById(int id)
         {
-            var pizza = _pizzaService.GetById(id);
-            return pizza == null ? (IHttpActionResult)NotFound() : Ok(pizza);
+            var result = _pizzaService.GetById(id);
+            
+            if (result.IsFailure)
+                return StatusCode(HttpStatusCode.InternalServerError);
+
+            return result.Value.HasNoValue ? (IHttpActionResult)NotFound() : Ok(result.Value.Value);
         }
 
         [HttpPost]
@@ -44,26 +49,22 @@ namespace RestSample.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var pizzaResult = _pizzaService.Add(pizza);
-                return Created($"api/pizzas/{pizzaResult.Id}", pizzaResult);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = _pizzaService.Add(pizza);
+            return result.IsSuccess ? 
+                Created($"api/pizzas/{result.Value.Id}", result.Value) : 
+                (IHttpActionResult)BadRequest(result.Error);
         }
 
        [HttpPut]
        [Route("{id}")]
         public IHttpActionResult Update(int id, [FromBody] PizzaDto pizza)
         {
-            var pizzaTemp = _pizzaService.Update(id, pizza);
-            if (pizzaTemp == null)
-                return NotFound();
+            var result = _pizzaService.Update(id, pizza);
+           
+            if (result.IsFailure)
+                return StatusCode(HttpStatusCode.InternalServerError);
 
-            return Ok(pizzaTemp);
+            return result.Value.HasNoValue ? (IHttpActionResult)NotFound() : Ok(result.Value.Value);
         }
 
         [HttpDelete]
@@ -71,10 +72,14 @@ namespace RestSample.Controllers
         public IHttpActionResult Delete(int id)
         {
             var result = _pizzaService.Delete(id);
-            if (!result)
-                return NotFound();
 
-            return StatusCode(HttpStatusCode.NoContent);
+            if (result.IsFailure)
+                return StatusCode(HttpStatusCode.InternalServerError);
+
+            if (result.Value)
+                return StatusCode(HttpStatusCode.NoContent);
+
+            return NotFound();
         }
     }
 }

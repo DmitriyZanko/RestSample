@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Castle.DynamicProxy;
 using FluentValidation;
+using Ninject;
 using Ninject.Modules;
 using RestSample.Data.Contexts;
+using RestSample.Logic.Aspects;
 using RestSample.Logic.Models;
 using RestSample.Logic.Profiles;
 using RestSample.Logic.Services;
@@ -24,8 +27,13 @@ namespace RestSample.Logic
             this.Bind<IMapper>().ToConstant(mapper);
 
             this.Bind<PizzaShopContext>().ToSelf();
-            this.Bind<IPizzaService>().To<PizzaService>();
             this.Bind<IValidator<PizzaDto>>().To<PizzaDtoValidator>();
+            this.Bind<IPizzaService>().ToMethod(ctx =>
+            {
+                var service = new PizzaService(ctx.Kernel.Get<PizzaShopContext>(), ctx.Kernel.Get<IMapper>());
+                return new ProxyGenerator().CreateInterfaceProxyWithTarget<IPizzaService>(service,
+                    new ValidationInterceptor(ctx.Kernel));
+            });
             // ...
         }
     }

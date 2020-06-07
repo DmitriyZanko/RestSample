@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using CSharpFunctionalExtensions;
 using RestSample.Logic.Models;
 
 namespace RestSample.Logic.Services
 {
     public interface IPizzaService: IDisposable
     {
-        IEnumerable<PizzaDto> GetAll();
+        Result<IEnumerable<PizzaDto>> GetAll();
+
+        Result<Maybe<PizzaDto>> GetById(int id);
         
-        PizzaDto GetById(int id);
-        
-        PizzaDto Add(PizzaDto pizza);
-        
-        PizzaDto Update(int id, PizzaDto pizza);
-        
-        bool Delete(int id);
+        Result<PizzaDto> Add(PizzaDto pizza);
+
+        Result<Maybe<PizzaDto>> Update(int id, PizzaDto pizza);
+
+        Result<bool> Delete(int id);
     }
 }
